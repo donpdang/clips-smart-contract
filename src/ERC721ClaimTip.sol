@@ -3,8 +3,8 @@
 pragma solidity ^0.8.0;
 
 import "creator-core-solidity/core/IERC721CreatorCore.sol";
-import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
-import "@manifoldxyz/creator-core-solidity/contracts/extensions/ICreatorExtensionTokenURI.sol";
+import "libraries-solidity/access/AdminControl.sol";
+import "creator-core-solidity/extensions/ICreatorExtensionTokenURI.sol";
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
