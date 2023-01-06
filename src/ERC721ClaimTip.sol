@@ -2,7 +2,7 @@
 // solhint-disable reason-string
 pragma solidity ^0.8.0;
 
-import "@manifoldxyz/creator-core-solidity/contracts/core/IERC721CreatorCore.sol";
+import "creator-core-solidity/core/IERC721CreatorCore.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 import "@manifoldxyz/creator-core-solidity/contracts/extensions/ICreatorExtensionTokenURI.sol";
 
