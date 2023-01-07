@@ -5,9 +5,9 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 /**
- * Lazy Claim interface
+ * Lazy Payable Claim interface
  */
-interface IERC1155LazyPayableClaim {
+interface IERC721ClaimTip {
     enum StorageProtocol { INVALID, NONE, ARWEAVE, IPFS }
 
     struct ClaimParameters {
@@ -16,9 +16,10 @@ interface IERC1155LazyPayableClaim {
         uint48 startDate;
         uint48 endDate;
         StorageProtocol storageProtocol;
+        bool identical;
         bytes32 merkleRoot;
         string location;
-        uint256 cost;
+        uint cost;
         address payable paymentReceiver;
     }
 
@@ -29,10 +30,10 @@ interface IERC1155LazyPayableClaim {
         uint48 startDate;
         uint48 endDate;
         StorageProtocol storageProtocol;
+        bool identical;
         bytes32 merkleRoot;
         string location;
-        uint256 tokenId;
-        uint256 cost;
+        uint cost;
         address payable paymentReceiver;
     }
 
@@ -61,9 +62,10 @@ interface IERC1155LazyPayableClaim {
      * @param creatorContractAddress    the creator contract corresponding to the claim
      * @param claimIndex                the index of the claim in the list of creatorContractAddress' _claims
      * @param storageProtocol           the new storage protocol
+     * @param identical                 the new value of identical
      * @param location                  the new location
      */
-    function updateTokenURIParams(address creatorContractAddress, uint256 claimIndex, StorageProtocol storageProtocol, string calldata location) external;
+    function updateTokenURIParams(address creatorContractAddress, uint256 claimIndex, StorageProtocol storageProtocol, bool identical, string calldata location) external;
 
     /**
      * @notice get a claim corresponding to a creator contract and index
@@ -129,5 +131,5 @@ interface IERC1155LazyPayableClaim {
      * @param recipients                addresses to airdrop to
      * @param amounts                   number of tokens to airdrop to each address in addresses
      */
-    function airdrop(address creatorContractAddress, uint256 claimIndex, address[] calldata recipients, uint256[] calldata amounts) external;
+    function airdrop(address creatorContractAddress, uint256 claimIndex, address[] calldata recipients, uint16[] calldata amounts) external;
 }

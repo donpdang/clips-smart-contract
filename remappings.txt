@@ -2,3 +2,5 @@ creator-core-solidity/=lib/creator-core-solidity/contracts/
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 libraries-solidity/=lib/libraries-solidity/contracts/
+openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/

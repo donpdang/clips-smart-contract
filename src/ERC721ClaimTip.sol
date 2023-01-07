@@ -6,20 +6,20 @@ import "creator-core-solidity/core/IERC721CreatorCore.sol";
 import "libraries-solidity/access/AdminControl.sol";
 import "creator-core-solidity/extensions/ICreatorExtensionTokenURI.sol";
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "openzeppelin-contracts/security/ReentrancyGuard.sol";
+import "openzeppelin-contracts/utils/cryptography/MerkleProof.sol";
+import "openzeppelin-contracts/utils/introspection/IERC165.sol";
+import "openzeppelin-contracts/utils/Strings.sol";
 
-import "./IERC721LazyPayableClaim.sol";
-import "../../libraries/delegation-registry/IDelegationRegistry.sol";
+import "./IERC721ClaimTip.sol";
+import "./IDelegationRegistry.sol";
 
 /**
  * @title Lazy Payable Claim
  * @author manifold.xyz
  * @notice Lazy payable claim with optional whitelist ERC721 tokens
  */
-contract ERC721LazyPayableClaim is IERC165, IERC721LazyPayableClaim, ICreatorExtensionTokenURI, ReentrancyGuard {
+contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, ReentrancyGuard {
     using Strings for uint256;
 
     string private constant ARWEAVE_PREFIX = "https://arweave.net/";
@@ -51,7 +51,7 @@ contract ERC721LazyPayableClaim is IERC165, IERC721LazyPayableClaim, ICreatorExt
     mapping(address => mapping(uint256 => TokenClaim)) private _tokenClaims;
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165) returns (bool) {
-        return interfaceId == type(IERC721LazyPayableClaim).interfaceId ||
+        return interfaceId == type(IERC721ClaimTip).interfaceId ||
             interfaceId == type(ICreatorExtensionTokenURI).interfaceId ||
             interfaceId == type(IERC165).interfaceId;
     }
