@@ -4,3 +4,4 @@ forge-std/=lib/forge-std/src/
 libraries-solidity/=lib/libraries-solidity/contracts/
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@manifoldxyz/creator-core-solidity/contracts/=lib/creator-core-solidity/contracts/

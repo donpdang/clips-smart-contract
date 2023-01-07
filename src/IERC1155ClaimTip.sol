@@ -5,9 +5,9 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 /**
- * Lazy Payable Claim interface
+ * Lazy Claim interface
  */
-interface IERC721ClaimTip {
+interface IERC1155ClaimTip {
     enum StorageProtocol { INVALID, NONE, ARWEAVE, IPFS }
 
     struct ClaimParameters {
@@ -16,10 +16,9 @@ interface IERC721ClaimTip {
         uint48 startDate;
         uint48 endDate;
         StorageProtocol storageProtocol;
-        bool identical;
         bytes32 merkleRoot;
         string location;
-        uint cost;
+        uint256 cost;
         address payable paymentReceiver;
     }
 
@@ -30,17 +29,16 @@ interface IERC721ClaimTip {
         uint48 startDate;
         uint48 endDate;
         StorageProtocol storageProtocol;
-        bool identical;
         bytes32 merkleRoot;
         string location;
-        uint cost;
+        uint256 tokenId;
+        uint256 cost;
         address payable paymentReceiver;
     }
 
     event ClaimInitialized(address indexed creatorContract, uint256 indexed claimIndex, address initializer);
     event ClaimMint(address indexed creatorContract, uint256 indexed claimIndex);
     event ClaimMintBatch(address indexed creatorContract, uint256 indexed claimIndex, uint16 mintCount);
-    event ClaimTipAmount(address indexed creatorContract, uint256 indexed claimIndex, uint indexed tip );
 
     /**
      * @notice initialize a new claim, emit initialize event, and return the newly created index
@@ -63,10 +61,9 @@ interface IERC721ClaimTip {
      * @param creatorContractAddress    the creator contract corresponding to the claim
      * @param claimIndex                the index of the claim in the list of creatorContractAddress' _claims
      * @param storageProtocol           the new storage protocol
-     * @param identical                 the new value of identical
      * @param location                  the new location
      */
-    function updateTokenURIParams(address creatorContractAddress, uint256 claimIndex, StorageProtocol storageProtocol, bool identical, string calldata location) external;
+    function updateTokenURIParams(address creatorContractAddress, uint256 claimIndex, StorageProtocol storageProtocol, string calldata location) external;
 
     /**
      * @notice get a claim corresponding to a creator contract and index
@@ -132,5 +129,5 @@ interface IERC721ClaimTip {
      * @param recipients                addresses to airdrop to
      * @param amounts                   number of tokens to airdrop to each address in addresses
      */
-    function airdrop(address creatorContractAddress, uint256 claimIndex, address[] calldata recipients, uint16[] calldata amounts) external;
+    function airdrop(address creatorContractAddress, uint256 claimIndex, address[] calldata recipients, uint256[] calldata amounts) external;
 }
