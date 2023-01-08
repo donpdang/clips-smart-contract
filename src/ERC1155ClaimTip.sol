@@ -206,7 +206,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         require(claim.storageProtocol != StorageProtocol.INVALID, "Claim not initialized");
 
         // Check price
-        require(msg.value == claim.cost, "Must pay more.");
+        require(msg.value >= claim.cost, "Must pay more.");
 
         // Check timestamps
         require(claim.startDate == 0 || claim.startDate < block.timestamp, "Transaction before start date");
@@ -240,6 +240,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         require(sent, "Failed to transfer to receiver");
 
         emit ClaimMint(creatorContractAddress, _claimTokenIds[creatorContractAddress][claimIndex]);
+        emit ClaimTipAmount(creatorContractAddress, _claimTokenIds[creatorContractAddress][claimIndex], msg.value - claim.cost);
     }
 
     /**
@@ -252,7 +253,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         require(claim.storageProtocol != StorageProtocol.INVALID, "Claim not initialized");
 
         // Check price
-        require(msg.value == claim.cost * mintCount, "Must pay more.");
+        require(msg.value >= claim.cost * mintCount, "Must pay more.");
 
         // Check timestamps
         require(claim.startDate == 0 || claim.startDate < block.timestamp, "Transaction before start date");
@@ -290,6 +291,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         require(sent, "Failed to transfer to receiver");
 
         emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount);
+        emit ClaimTipAmount(creatorContractAddress, claimIndex, msg.value - (claim.cost * mintCount));
     }
 
     /**
