@@ -4,9 +4,8 @@
 pragma solidity ^0.8.0;
 
 import "@manifoldxyz/creator-core-solidity/contracts/core/IERC1155CreatorCore.sol";
-import "@manifoldxyz/libraries-solidity/contracts/access/IAdminControl.sol";
 import "@manifoldxyz/creator-core-solidity/contracts/extensions/ICreatorExtensionTokenURI.sol";
-
+import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -28,6 +27,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
     uint256 private constant MINT_INDEX_BITMASK = 0xFF;
     // solhint-disable-next-line
     address public immutable DELEGATION_REGISTRY;
+    address public constant _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
 
     // stores mapping from tokenId to the claim it represents
@@ -239,8 +239,8 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         (bool sent, ) = claim.paymentReceiver.call{value: msg.value}("");
         require(sent, "Failed to transfer to receiver");
 
-        emit ClaimMint(creatorContractAddress, _claimTokenIds[creatorContractAddress][claimIndex]);
-        emit ClaimTipAmount(creatorContractAddress, _claimTokenIds[creatorContractAddress][claimIndex], msg.value - claim.cost);
+        emit ClaimMint(creatorContractAddress, claimIndex);
+        emit ClaimTipAmount(creatorContractAddress, claimIndex, msg.value - claim.cost);
     }
 
     /**

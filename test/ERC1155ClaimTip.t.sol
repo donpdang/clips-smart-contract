@@ -48,7 +48,14 @@ contract ERC1155ClaimTipTest is Test {
           paymentReceiver: payable(owner)
         });
         // initialize claim
-        lazyClaim.initializeClaim(address(creator), 2,claimParameters);
+        lazyClaim.initializeClaim(address(creator), 1,claimParameters);
+        bytes32[] memory merkleProof = new bytes32[](1);
+        // able to pay the right price
+        lazyClaim.mint{value: 1e18}(address(creator), 1, 0, merkleProof, address(minter));
+        // able to pay more
+        // check emit event
+        lazyClaim.mint{value: 2e18}(address(creator), 1, 0, merkleProof, address(minter));
+
         vm.stopPrank();
     }
 }
