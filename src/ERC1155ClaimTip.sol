@@ -234,13 +234,20 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         amounts[0] = 1;
         _mintClaim(creatorContractAddress, claim, recipients, amounts);
 
-        // Transfer proceeds to receiver
-        // solhint-disable-next-line
-        (bool sent, ) = claim.paymentReceiver.call{value: msg.value}("");
-        require(sent, "Failed to transfer to receiver");
-
-        emit ClaimMint(creatorContractAddress, claimIndex);
-        emit ClaimTipAmount(creatorContractAddress, claimIndex, msg.value - claim.cost);
+         // calculate tip amount, 2% of tip amount goes to dev wallet
+        uint256 commission = (msg.value - claim.cost)*2/100;
+        if (commission > 0) {
+            // solhint-disable-next-line
+            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - commission}("");
+            require(sentToCreator, "Failed to transfer to receiver");
+            (bool sentToDev, ) = _devWallet.call{value: commission}("");
+            require(sentToDev, "Failed to transfer to dev wallet");
+        } else {
+             // solhint-disable-next-line
+            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value}("");
+            require(sentToCreator, "Failed to transfer to receiver");
+        }
+        emit ClaimMint(creatorContractAddress, claimIndex, msg.value - claim.cost);
     }
 
     /**
@@ -286,12 +293,22 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = mintCount;
         _mintClaim(creatorContractAddress, claim, recipients, amounts);
-        // solhint-disable-next-line
-        (bool sent, ) = claim.paymentReceiver.call{value: msg.value}("");
-        require(sent, "Failed to transfer to receiver");
 
-        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount);
-        emit ClaimTipAmount(creatorContractAddress, claimIndex, msg.value - (claim.cost * mintCount));
+         // calculate tip amount, 2% of tip amount goes to dev wallet
+        uint256 commission = (msg.value - (claim.cost * mintCount))*2/100;
+        if (commission > 0) {
+            // solhint-disable-next-line
+            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - commission}("");
+            require(sentToCreator, "Failed to transfer to receiver");
+            (bool sentToDev, ) = _devWallet.call{value: commission}("");
+            require(sentToDev, "Failed to transfer to dev wallet");
+        } else {
+             // solhint-disable-next-line
+            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value}("");
+            require(sentToCreator, "Failed to transfer to receiver");
+        }
+ 
+        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount, msg.value - (claim.cost * mintCount));
     }
 
     /**

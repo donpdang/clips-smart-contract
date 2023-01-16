@@ -38,9 +38,8 @@ interface IERC721ClaimTip {
     }
 
     event ClaimInitialized(address indexed creatorContract, uint256 indexed claimIndex, address initializer);
-    event ClaimMint(address indexed creatorContract, uint256 indexed claimIndex);
-    event ClaimMintBatch(address indexed creatorContract, uint256 indexed claimIndex, uint16 mintCount);
-    event ClaimTipAmount(address indexed creatorContract, uint256 indexed claimIndex, uint indexed tip );
+    event ClaimMint(address indexed creatorContract, uint256 indexed claimIndex, uint indexed tip);
+    event ClaimMintBatch(address indexed creatorContract, uint256 indexed claimIndex, uint16 mintCount, uint indexed tip);
 
     /**
      * @notice initialize a new claim, emit initialize event, and return the newly created index
