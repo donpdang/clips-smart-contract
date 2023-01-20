@@ -27,7 +27,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     uint256 private constant MINT_INDEX_BITMASK = 0xFF;
     // solhint-disable-next-line
     address public immutable DELEGATION_REGISTRY;
-    address public constant _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
+    address public _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
     uint256 private constant MAX_UINT_256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
@@ -69,6 +69,11 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     modifier creatorAdminRequired(address creatorContractAddress) {
         AdminControl creatorCoreContract = AdminControl(creatorContractAddress);
         require(creatorCoreContract.isAdmin(msg.sender), "Wallet is not an administrator for contract");
+        _;
+    }
+
+    modifier adminRequired() {
+        require(IAdminControl(address(this)).isAdmin(msg.sender), "Wallet is not an administrator for contract");
         _;
     }
 
@@ -373,6 +378,10 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         require(mintBitmask & claimMintTracking == 0, "Already minted");
         _claimMintIndices[creatorContractAddress][claimIndex][claimMintIndex] = claimMintTracking | mintBitmask;
     }
+
+    function setDevWallet(address devWallet) external adminRequired {
+        _devWallet = devWallet;
+    } 
 
     /**
      * See {ICreatorExtensionTokenURI-tokenURI}.
