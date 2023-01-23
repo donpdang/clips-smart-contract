@@ -2,8 +2,8 @@
 // solhint-disable reason-string
 pragma solidity ^0.8.0;
 
-import "creator-core-solidity/core/IERC721CreatorCore.sol";
-import "libraries-solidity/access/AdminControl.sol";
+import "@manifoldxyz/creator-core-solidity/contracts/core/IERC721CreatorCore.sol";
+import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 import "creator-core-solidity/extensions/ICreatorExtensionTokenURI.sol";
 
 import "openzeppelin-contracts/security/ReentrancyGuard.sol";
@@ -16,7 +16,7 @@ import "./IDelegationRegistry.sol";
 
 /**
  * @title Lazy Payable Claim
- * @author manifold.xyz
+ * @author dondang & lyndon
  * @notice Lazy payable claim with optional whitelist ERC721 tokens
  */
 contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, ReentrancyGuard {
@@ -28,6 +28,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     // solhint-disable-next-line
     address public immutable DELEGATION_REGISTRY;
     address public _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
+    address private _extensionOwner;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
     uint256 private constant MAX_UINT_256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
@@ -59,6 +60,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
 
     constructor(address delegationRegistry) {
         DELEGATION_REGISTRY = delegationRegistry;
+        _extensionOwner = msg.sender;
     }
 
     /**
@@ -72,8 +74,8 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         _;
     }
 
-    modifier adminRequired() {
-        require(IAdminControl(address(this)).isAdmin(msg.sender), "Wallet is not an administrator for contract");
+    modifier ownerRequired() {
+        require(_extensionOwner == msg.sender, "Wallet is not an administrator for contract");
         _;
     }
 
@@ -261,7 +263,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
             (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value}("");
             require(sentToCreator, "Failed to transfer to receiver");
         }
-        emit ClaimMint(creatorContractAddress, claimIndex, msg.value - claim.cost);
+        emit ClaimMint(creatorContractAddress, claimIndex, commission);
     }
 
     /**
@@ -323,7 +325,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
             require(sentToCreator, "Failed to transfer to receiver");
         }
  
-        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount, msg.value - (claim.cost * mintCount));
+        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount, commission);
     }
 
     /**
@@ -379,7 +381,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         _claimMintIndices[creatorContractAddress][claimIndex][claimMintIndex] = claimMintTracking | mintBitmask;
     }
 
-    function setDevWallet(address devWallet) external adminRequired {
+    function setDevWallet(address devWallet) external ownerRequired {
         _devWallet = devWallet;
     } 
 

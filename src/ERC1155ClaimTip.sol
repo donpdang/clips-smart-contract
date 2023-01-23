@@ -16,7 +16,7 @@ import "./IDelegationRegistry.sol";
 
 /**
  * @title Lazy Payable Claim
- * @author manifold.xyz
+ * @author dondang & lyndon
  * @notice Lazy claim with optional whitelist ERC1155 tokens
  */
 contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI, ReentrancyGuard {
@@ -28,6 +28,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
     // solhint-disable-next-line
     address public immutable DELEGATION_REGISTRY;
     address public _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
+    address public immutable _extensionOwner;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
 
     // stores mapping from tokenId to the claim it represents
@@ -53,6 +54,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
 
     constructor(address delegationRegistry) {
         DELEGATION_REGISTRY = delegationRegistry;
+         _extensionOwner = msg.sender;
     }
 
     /**
@@ -65,8 +67,8 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         _;
     }
 
-    modifier adminRequired() {
-        require(IAdminControl(address(this)).isAdmin(msg.sender), "Wallet is not an administrator for contract");
+    modifier ownerRequired() {
+        require(_extensionOwner == msg.sender, "Wallet is not an administrator for contract");
         _;
     }
 
@@ -252,7 +254,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
             (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value}("");
             require(sentToCreator, "Failed to transfer to receiver");
         }
-        emit ClaimMint(creatorContractAddress, claimIndex, msg.value - claim.cost);
+        emit ClaimMint(creatorContractAddress, claimIndex, commission);
     }
 
     /**
@@ -313,7 +315,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
             require(sentToCreator, "Failed to transfer to receiver");
         }
  
-        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount, msg.value - (claim.cost * mintCount));
+        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount, commission);
     }
 
     /**
@@ -371,7 +373,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
         _claimMintIndices[creatorContractAddress][claimIndex][claimMintIndex] = claimMintTracking | mintBitmask;
     }
 
-    function setDevWallet(address devWallet) external adminRequired {
+    function setDevWallet(address devWallet) external ownerRequired {
         _devWallet = devWallet;
     } 
 
