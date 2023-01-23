@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-/// @author: manifold.xyz
+/// @author: dondang & lyndon
 
 /**
  * Lazy Claim interface

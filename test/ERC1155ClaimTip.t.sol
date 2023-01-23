@@ -37,7 +37,7 @@ contract ERC1155ClaimTipTest is Test {
         vm.stopPrank();
     }
 
-    function testTipping() public {
+    function testTippingMint() public {
        vm.startPrank(creator);
        IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
           merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
@@ -72,6 +72,47 @@ contract ERC1155ClaimTipTest is Test {
         uint afterBalanceDev = owner.balance;
         // transfer full price + 98% of tip amount to the creator wallet
         assertEq(1e17 + (1e17*98/100), afterBalanceCreator - beforeBalanceCreator);
+         // transfer 20% of tip amount to the dev wallet
+        assertEq(1e17*2/100, afterBalanceDev - beforeBalanceDev);
+        vm.stopPrank();
+    }
+
+    function testTippingMintBatch() public {
+       vm.startPrank(creator);
+       IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
+          merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+          location: "arweaveHash2",
+          totalMax: 0,
+          walletMax: 0,
+          startDate: 0,
+          endDate: 0,
+          storageProtocol: IERC1155ClaimTip.StorageProtocol.ARWEAVE,
+          cost: 1e17,
+          paymentReceiver: payable(creator)
+        });
+        // initialize claim
+        lazyClaim.initializeClaim(address(creatorContract), 1,claimParameters);
+        vm.stopPrank();
+
+        uint beforeBalance = creator.balance;
+
+        vm.startPrank(minter);
+        // able to pay the right price
+        uint32[] memory randomArray = new uint32[](1);
+        bytes32[][] memory anotherRandomArray = new bytes32[][](1);
+        lazyClaim.mintBatch{value: 2e17}(address(creatorContract), 1, 2, randomArray, anotherRandomArray, address(minter));
+        // transfer full amount to the creator wallet
+        uint afterBalance = creator.balance;
+        assertEq(afterBalance - beforeBalance, 2e17);
+
+        uint beforeBalanceCreator = creator.balance;
+        uint beforeBalanceDev = owner.balance;
+        // able to pay more
+        lazyClaim.mintBatch{value: 3e17}(address(creatorContract), 1, 2, randomArray, anotherRandomArray, address(minter));
+        uint afterBalanceCreator = creator.balance;
+        uint afterBalanceDev = owner.balance;
+        // transfer full price + 98% of tip amount to the creator wallet
+        assertEq(2e17 + (1e17*98/100), afterBalanceCreator - beforeBalanceCreator);
          // transfer 20% of tip amount to the dev wallet
         assertEq(1e17*2/100, afterBalanceDev - beforeBalanceDev);
         vm.stopPrank();
