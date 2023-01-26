@@ -31,6 +31,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     address private _extensionOwner;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
     uint256 private constant MAX_UINT_256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    uint256 private constant DEV_FEE = 0.00062 ether;
 
     // stores mapping from tokenId to the claim it represents
     // { contractAddress => { tokenId => Claim } }
@@ -222,8 +223,8 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         // Safely retrieve the claim
         require(claim.storageProtocol != StorageProtocol.INVALID, "Claim not initialized");
 
-        // Check price
-        require(msg.value >= claim.cost, "Must pay more.");
+        // Check price (dev fee included)
+        require(msg.value >= claim.cost + DEV_FEE, "Must pay more.");
 
         // Check timestamps
         require(claim.startDate == 0 || claim.startDate < block.timestamp, "Transaction before start date");
@@ -250,20 +251,12 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         // Insert the new tokenId into _tokenClaims for the current claim address & index
         _tokenClaims[creatorContractAddress][newTokenId] = TokenClaim(uint224(claimIndex), claim.total);
 
-        // calculate tip amount, 2% of tip amount goes to dev wallet
-        uint256 commission = (msg.value - claim.cost)*2/100;
-        if (commission > 0) {
-            // solhint-disable-next-line
-            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - commission}("");
-            require(sentToCreator, "Failed to transfer to receiver");
-            (bool sentToDev, ) = _devWallet.call{value: commission}("");
-            require(sentToDev, "Failed to transfer to dev wallet");
-        } else {
-             // solhint-disable-next-line
-            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value}("");
-            require(sentToCreator, "Failed to transfer to receiver");
-        }
-        emit ClaimMint(creatorContractAddress, claimIndex, commission);
+        // solhint-disable-next-line
+        (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - DEV_FEE}("");
+        require(sentToCreator, "Failed to transfer to receiver");
+        (bool sentToDev, ) = _devWallet.call{value: DEV_FEE}("");
+        require(sentToDev, "Failed to transfer to dev wallet");
+        emit ClaimTipMint(creatorContractAddress, claimIndex, claim.cost);
     }
 
     /**
@@ -276,7 +269,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         require(claim.storageProtocol != StorageProtocol.INVALID, "Claim not initialized");
 
         // Check price
-        require(msg.value == claim.cost * mintCount, "Must pay more.");
+        require(msg.value >= (claim.cost * mintCount) + DEV_FEE, "Must pay more.");
 
         // Check timestamps
         require(claim.startDate == 0 || claim.startDate < block.timestamp, "Transaction before start date");
@@ -304,28 +297,19 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
                 require(_mintsPerWallet[creatorContractAddress][claimIndex][msg.sender]+mintCount <= claim.walletMax, "Too many requested for this wallet");
                 unchecked{ _mintsPerWallet[creatorContractAddress][claimIndex][msg.sender] += mintCount; }
             }
-            
         }
         uint256[] memory newTokenIds = IERC721CreatorCore(creatorContractAddress).mintExtensionBatch(msg.sender, mintCount);
         for (uint256 i = 0; i < mintCount;) {
             _tokenClaims[creatorContractAddress][newTokenIds[i]] = TokenClaim(uint224(claimIndex), uint32(newMintIndex+i));
             unchecked { ++i; }
         }
-        // calculate tip amount, 2% of tip amount goes to dev wallet
-        uint256 commission = (msg.value - (claim.cost * mintCount))*2/100;
-        if (commission > 0) {
-            // solhint-disable-next-line
-            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - commission}("");
-            require(sentToCreator, "Failed to transfer to receiver");
-            (bool sentToDev, ) = _devWallet.call{value: commission}("");
-            require(sentToDev, "Failed to transfer to dev wallet");
-        } else {
-             // solhint-disable-next-line
-            (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value}("");
-            require(sentToCreator, "Failed to transfer to receiver");
-        }
+        // solhint-disable-next-line
+        (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - DEV_FEE}("");
+        require(sentToCreator, "Failed to transfer to receiver");
+        (bool sentToDev, ) = _devWallet.call{value: DEV_FEE}("");
+        require(sentToDev, "Failed to transfer to dev wallet");
  
-        emit ClaimMintBatch(creatorContractAddress, claimIndex, mintCount, commission);
+        emit ClaimTipMintBatch(creatorContractAddress, claimIndex, mintCount, claim.cost);
     }
 
     /**
