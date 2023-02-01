@@ -31,7 +31,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     address private _extensionOwner;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
     uint256 private constant MAX_UINT_256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-    uint256 private constant DEV_FEE = 0.00062 ether;
+    uint256 private constant DEV_FEE = 0.00069 ether;
 
     // stores mapping from tokenId to the claim it represents
     // { contractAddress => { tokenId => Claim } }

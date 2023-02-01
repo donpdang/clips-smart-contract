@@ -30,7 +30,7 @@ contract ERC1155ClaimTip is IERC165, IERC1155ClaimTip, ICreatorExtensionTokenURI
     address public _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
     address public immutable _extensionOwner;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
-    uint256 private constant DEV_FEE = 0.00062 ether;
+    uint256 private constant DEV_FEE = 0.00069 ether;
 
     // stores mapping from tokenId to the claim it represents
     // { contractAddress => { tokenId => Claim } }
