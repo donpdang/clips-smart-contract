@@ -27,7 +27,6 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     uint256 private constant MINT_INDEX_BITMASK = 0xFF;
     // solhint-disable-next-line
     address public immutable DELEGATION_REGISTRY;
-    address public _devWallet = 0xCD56df7B4705A99eBEBE2216e350638a1582bEC4;
     address private _extensionOwner;
     uint32 private constant MAX_UINT_32 = 0xffffffff;
     uint256 private constant MAX_UINT_256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
@@ -72,11 +71,6 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
     modifier creatorAdminRequired(address creatorContractAddress) {
         AdminControl creatorCoreContract = AdminControl(creatorContractAddress);
         require(creatorCoreContract.isAdmin(msg.sender), "Wallet is not an administrator for contract");
-        _;
-    }
-
-    modifier ownerRequired() {
-        require(_extensionOwner == msg.sender, "Wallet is not an administrator for contract");
         _;
     }
 
@@ -223,7 +217,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         // Safely retrieve the claim
         require(claim.storageProtocol != StorageProtocol.INVALID, "Claim not initialized");
 
-        // Check price (dev fee included)
+        // Check price
         require(msg.value >= claim.cost + DEV_FEE, "Must pay more.");
 
         // Check timestamps
@@ -254,8 +248,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         // solhint-disable-next-line
         (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - DEV_FEE}("");
         require(sentToCreator, "Failed to transfer to receiver");
-        (bool sentToDev, ) = _devWallet.call{value: DEV_FEE}("");
-        require(sentToDev, "Failed to transfer to dev wallet");
+        
         emit ClaimTipMint(creatorContractAddress, claimIndex, claim.cost);
     }
 
@@ -269,7 +262,7 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         require(claim.storageProtocol != StorageProtocol.INVALID, "Claim not initialized");
 
         // Check price
-        require(msg.value >= (claim.cost * mintCount) + DEV_FEE, "Must pay more.");
+        require(msg.value >=  (mintCount * (claim.cost + DEV_FEE)), "Must pay more.");
 
         // Check timestamps
         require(claim.startDate == 0 || claim.startDate < block.timestamp, "Transaction before start date");
@@ -304,11 +297,9 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
             unchecked { ++i; }
         }
         // solhint-disable-next-line
-        (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - DEV_FEE}("");
+        (bool sentToCreator, ) = claim.paymentReceiver.call{value: msg.value - (DEV_FEE * mintCount)}("");
         require(sentToCreator, "Failed to transfer to receiver");
-        (bool sentToDev, ) = _devWallet.call{value: DEV_FEE}("");
-        require(sentToDev, "Failed to transfer to dev wallet");
- 
+
         emit ClaimTipMintBatch(creatorContractAddress, claimIndex, mintCount, claim.cost);
     }
 
@@ -365,9 +356,10 @@ contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, 
         _claimMintIndices[creatorContractAddress][claimIndex][claimMintIndex] = claimMintTracking | mintBitmask;
     }
 
-    function setDevWallet(address devWallet) external ownerRequired {
-        _devWallet = devWallet;
-    } 
+    function withdraw() external {
+        require(_extensionOwner == msg.sender, "Wallet is not an administrator for contract");
+        payable(msg.sender).transfer(address(this).balance);
+    }
 
     /**
      * See {ICreatorExtensionTokenURI-tokenURI}.
