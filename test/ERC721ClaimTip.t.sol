@@ -2,20 +2,20 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/ERC1155ClaimTip.sol";
+import "../src/ERC721ClaimTip.sol";
 import {Utils} from "./utils/Utils.sol";
-import {ERC1155Creator} from "@manifoldxyz/creator-core-solidity/contracts/ERC1155Creator.sol";
+import {ERC721Creator} from "@manifoldxyz/creator-core-solidity/contracts/ERC721Creator.sol";
 
 
 
 contract ERC1155ClaimTipTest is Test {
     Utils internal utils;
     address payable[] internal users;
-    ERC1155ClaimTip public lazyClaim;
+    ERC721ClaimTip public lazyClaim;
     address internal owner;
     address internal creator;
     address internal minter;
-    ERC1155Creator public creatorContract;
+    ERC721Creator public creatorContract;
     uint256 private constant DEV_FEE = 0.00069 ether;
 
     function setUp() public {
@@ -30,28 +30,29 @@ contract ERC1155ClaimTipTest is Test {
 
         // dev deploy the clip extension contract
         vm.startPrank(owner);
-        lazyClaim = new ERC1155ClaimTip(0x00000000000076A84feF008CDAbe6409d2FE638B);
+        lazyClaim = new ERC721ClaimTip(0x00000000000076A84feF008CDAbe6409d2FE638B);
         vm.stopPrank();
 
         // creator deploying the creator contract
         vm.startPrank(creator);
-        creatorContract = new ERC1155Creator("test","TEST");
+        creatorContract = new ERC721Creator("test","TEST");
         creatorContract.registerExtension(address(lazyClaim), "");
         vm.stopPrank();
     }
 
     function testTippingMint() public {
        vm.startPrank(creator);
-       IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
+       IERC721ClaimTip.ClaimParameters memory claimParameters = IERC721ClaimTip.ClaimParameters( {
           merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
           location: "arweaveHash2",
           totalMax: 0,
           walletMax: 0,
           startDate: 0,
           endDate: 0,
-          storageProtocol: IERC1155ClaimTip.StorageProtocol.ARWEAVE,
+          storageProtocol: IERC721ClaimTip.StorageProtocol.ARWEAVE,
           cost: 1e17,
-          paymentReceiver: payable(creator)
+          paymentReceiver: payable(creator),
+          identical: true
         });
         // initialize claim
         lazyClaim.initializeClaim(address(creatorContract), 1,claimParameters);
@@ -83,16 +84,17 @@ contract ERC1155ClaimTipTest is Test {
 
     function testTippingMintBatch() public {
        vm.startPrank(creator);
-       IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
+       IERC721ClaimTip.ClaimParameters memory claimParameters = IERC721ClaimTip.ClaimParameters( {
           merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
           location: "arweaveHash2",
           totalMax: 0,
           walletMax: 0,
           startDate: 0,
           endDate: 0,
-          storageProtocol: IERC1155ClaimTip.StorageProtocol.ARWEAVE,
+          storageProtocol: IERC721ClaimTip.StorageProtocol.ARWEAVE,
           cost: 1e17,
-          paymentReceiver: payable(creator)
+          paymentReceiver: payable(creator),
+          identical: true
         });
         // initialize claim
         lazyClaim.initializeClaim(address(creatorContract), 1,claimParameters);
@@ -126,16 +128,17 @@ contract ERC1155ClaimTipTest is Test {
 
     function testNotEnoughEthMintBatch() public {
         vm.startPrank(creator);
-       IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
+       IERC721ClaimTip.ClaimParameters memory claimParameters = IERC721ClaimTip.ClaimParameters( {
           merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
           location: "arweaveHash2",
           totalMax: 0,
           walletMax: 0,
           startDate: 0,
           endDate: 0,
-          storageProtocol: IERC1155ClaimTip.StorageProtocol.ARWEAVE,
+          storageProtocol: IERC721ClaimTip.StorageProtocol.ARWEAVE,
           cost: 1e17,
-          paymentReceiver: payable(creator)
+          paymentReceiver: payable(creator),
+          identical: true
         });
         // initialize claim
         lazyClaim.initializeClaim(address(creatorContract), 1,claimParameters);
@@ -151,16 +154,17 @@ contract ERC1155ClaimTipTest is Test {
 
         function testNotEnoughEthMint() public {
         vm.startPrank(creator);
-       IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
+       IERC721ClaimTip.ClaimParameters memory claimParameters = IERC721ClaimTip.ClaimParameters( {
           merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
           location: "arweaveHash2",
           totalMax: 0,
           walletMax: 0,
           startDate: 0,
           endDate: 0,
-          storageProtocol: IERC1155ClaimTip.StorageProtocol.ARWEAVE,
+          storageProtocol: IERC721ClaimTip.StorageProtocol.ARWEAVE,
           cost: 1e17,
-          paymentReceiver: payable(creator)
+          paymentReceiver: payable(creator),
+          identical: true
         });
         // initialize claim
         lazyClaim.initializeClaim(address(creatorContract), 1,claimParameters);
@@ -183,16 +187,17 @@ contract ERC1155ClaimTipTest is Test {
 
         // test if the new dev wallet will receive the fund
         vm.startPrank(creator);
-       IERC1155ClaimTip.ClaimParameters memory claimParameters = IERC1155ClaimTip.ClaimParameters( {
+       IERC721ClaimTip.ClaimParameters memory claimParameters = IERC721ClaimTip.ClaimParameters( {
           merkleRoot: bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
           location: "arweaveHash2",
           totalMax: 0,
           walletMax: 0,
           startDate: 0,
           endDate: 0,
-          storageProtocol: IERC1155ClaimTip.StorageProtocol.ARWEAVE,
+          storageProtocol: IERC721ClaimTip.StorageProtocol.ARWEAVE,
           cost: 1e17,
-          paymentReceiver: payable(creator)
+          paymentReceiver: payable(creator),
+          identical: true
         });
         // initialize claim
         lazyClaim.initializeClaim(address(creatorContract), 1,claimParameters);
