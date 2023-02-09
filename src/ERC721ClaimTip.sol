@@ -16,7 +16,7 @@ import "./IDelegationRegistry.sol";
 
 /**
  * @title Lazy Payable Claim
- * @author dondang & lyndon
+ * @author nobodiesdev
  * @notice Lazy payable claim with optional whitelist ERC721 tokens
  */
 contract ERC721ClaimTip is IERC165, IERC721ClaimTip, ICreatorExtensionTokenURI, ReentrancyGuard {

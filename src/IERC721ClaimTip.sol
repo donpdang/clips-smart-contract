@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-/// @author: dondang & lyndon
+/// @author: nobodiesdev
 
 /**
  * Lazy Payable Claim interface
